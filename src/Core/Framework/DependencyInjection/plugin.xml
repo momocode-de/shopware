@@ -136,12 +136,19 @@
 
         <service id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginChecksumCreateCommand">
             <argument type="service" id="plugin.repository"/>
-            <argument type="service" id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHasher"/>
+            <argument type="service" id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHashService"/>
 
             <tag name="console.command"/>
         </service>
 
-        <service id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHasher">
+        <service id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginChecksumCheckCommand">
+            <argument type="service" id="plugin.repository"/>
+            <argument type="service" id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHashService"/>
+
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHashService">
             <argument>%kernel.project_dir%</argument>
         </service>
 

@@ -8,7 +8,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Log\Package;
-use Shopware\Core\Framework\Plugin\Exception\PluginNotInstalledException;
 use Shopware\Core\Framework\Plugin\PluginEntity;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -26,9 +25,8 @@ class PluginChecksumCreateCommand extends Command
 {
     public function __construct(
         private readonly EntityRepository $pluginRepo,
-        private readonly PluginFileHasher $pluginFileHasher,
-    )
-    {
+        private readonly PluginFileHashService $pluginFileHasher,
+    ) {
         parent::__construct();
     }
 
@@ -58,11 +56,20 @@ class PluginChecksumCreateCommand extends Command
             return self::FAILURE;
         }
 
-        $hashes = $this->pluginFileHasher->getHashes($plugin, $input);
+        $extensions = $this->pluginFileHasher->getExtensions($input);
+        $hashes = $this->pluginFileHasher->getHashes($plugin, $extensions);
 
-        file_put_contents($this->pluginFileHasher->getChecksumFilePathForPlugin($plugin), \json_encode($hashes, \JSON_THROW_ON_ERROR));
+        $checksumData = [
+            'pluginVersion' => $plugin->getVersion(),
+            'extensions' => $extensions,
+            'hashes' => $hashes,
+        ];
+
+        file_put_contents(
+            $this->pluginFileHasher->getChecksumFilePathForPlugin($plugin),
+            \json_encode($checksumData, \JSON_THROW_ON_ERROR)
+        );
 
         return self::SUCCESS;
     }
-
 }
