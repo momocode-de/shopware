@@ -304,6 +304,13 @@
         "title": "{extensionLabel}: Datenschutz-Erweiterungen",
         "intro": "Diese App verarbeitet personenbezogene Daten. Für die Anpassung Deiner Datenschutzerklärung gibt der Hersteller folgende Hinweise:"
       },
+      "sw-extension-changes-modal": {
+        "title": "{extensionLabel}: Modifications on plugin code",
+        "intro": "Hello dear plugin developer, your code got modified. These are the changes:",
+        "new": "New files added",
+        "changed": "Files changed",
+        "missing": "Files missing"
+      },
       "sw-extension-permissions-details-modal": {
         "operationRead": "Ansehen",
         "operationUpdate": "Bearbeiten",

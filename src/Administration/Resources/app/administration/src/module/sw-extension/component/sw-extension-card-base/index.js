@@ -39,6 +39,7 @@ export default {
             showPermissionsModal: false,
             permissionsAccepted: false,
             showPrivacyModal: false,
+            showChangesModal: false,
             permissionModalActionLabel: null,
             openLink: null,
             showConsentAffirmationModal: false,
@@ -169,6 +170,12 @@ export default {
             }
 
             return null;
+        },
+
+        modificationExist() {
+            return this.extension.new.length > 0
+                || this.extension.missing.length > 0
+                || this.extension.changed.length > 0;
         },
 
         consentAffirmationModalActionLabel() {
@@ -411,6 +418,19 @@ export default {
 
         closePrivacyModal() {
             this.showPrivacyModal = false;
+        },
+
+        openChangesModal() {
+            if (!(this.extension.new.length > 0
+                || this.extension.missing.length > 0
+                || this.extension.changed.length > 0)) {
+                return;
+            }
+            this.showChangesModal = true;
+        },
+
+        closeChangesModal() {
+            this.showChangesModal = false;
         },
 
         clearCacheAndReloadPage() {

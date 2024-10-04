@@ -5,6 +5,7 @@ namespace Shopware\Core\Framework\Store\Api;
 use Composer\IO\NullIO;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Log\Package;
+use Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHashService;
 use Shopware\Core\Framework\Plugin\Exception\PluginNotAZipFileException;
 use Shopware\Core\Framework\Plugin\PluginManagementService;
 use Shopware\Core\Framework\Plugin\PluginService;
@@ -32,7 +33,8 @@ class ExtensionStoreActionsController extends AbstractController
         private readonly PluginService $pluginService,
         private readonly PluginManagementService $pluginManagementService,
         private readonly Filesystem $fileSystem,
-        private readonly bool $runtimeExtensionManagementAllowed
+        private readonly bool $runtimeExtensionManagementAllowed,
+        private readonly PluginFileHashService $pluginFileHashService,
     ) {
     }
 

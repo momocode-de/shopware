@@ -42,6 +42,7 @@ Shopware.Component.register(
     'sw-extension-privacy-policy-extensions-modal',
     () => import('./component/sw-extension-privacy-policy-extensions-modal'),
 );
+Shopware.Component.register('sw-extension-changes-modal', () => import('./component/sw-extension-changes-modal'));
 Shopware.Component.register('sw-extension-deactivation-modal', () => import('./component/sw-extension-deactivation-modal'));
 Shopware.Component.register('sw-extension-removal-modal', () => import('./component/sw-extension-removal-modal'));
 Shopware.Component.register('sw-extension-uninstall-modal', () => import('./component/sw-extension-uninstall-modal'));
