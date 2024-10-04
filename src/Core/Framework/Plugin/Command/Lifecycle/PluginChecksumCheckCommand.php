@@ -22,6 +22,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[Package('core')]
 class PluginChecksumCheckCommand extends Command
 {
+    /**
+     * @internal
+     */
     public function __construct(
         private readonly EntityRepository $pluginRepo,
         private readonly PluginFileHashService $pluginFileHasher,

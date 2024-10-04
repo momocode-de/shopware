@@ -10,6 +10,9 @@ use Symfony\Component\Finder\Finder;
 #[Package('core')]
 class PluginFileHashService
 {
+    /**
+     * @internal
+     */
     public function __construct(
         private readonly string $rootDir,
     ) {
@@ -17,7 +20,7 @@ class PluginFileHashService
 
     public function getChecksumFilePathForPlugin(PluginEntity $plugin): string
     {
-        return $this->rootDir . '/' . $plugin->getPath() . '/checksums.json';
+        return $this->rootDir . '/' . $plugin->getPath() . 'checksums.json';
     }
 
     /**
@@ -54,6 +57,22 @@ class PluginFileHashService
         }
 
         return $extensions;
+    }
+
+    /**
+     * @param string[] $extensions
+     *
+     * @return array{pluginVersion: string, extensions: array<string>, hashes: array<string, string>}
+     */
+    public function getChecksumData(PluginEntity $plugin, array $extensions): array
+    {
+        $hashes = $this->getHashes($plugin, $extensions);
+
+        return [
+            'pluginVersion' => $plugin->getVersion(),
+            'extensions' => $extensions,
+            'hashes' => $hashes,
+        ];
     }
 
     /**
