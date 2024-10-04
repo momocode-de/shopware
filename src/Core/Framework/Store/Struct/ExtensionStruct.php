@@ -151,6 +151,12 @@ class ExtensionStruct extends Struct
 
     protected string $storeUrl;
 
+    protected array $new = [];
+
+    protected array $missing = [];
+
+    protected array $changed = [];
+
     /**
      * @param array<string, mixed> $data
      *
@@ -599,5 +605,35 @@ class ExtensionStruct extends Struct
     public function setStoreUrl(string $storeUrl): void
     {
         $this->storeUrl = $storeUrl;
+    }
+
+    public function getNew(): array
+    {
+        return $this->new;
+    }
+
+    public function setNew(array $new): void
+    {
+        $this->new = $new;
+    }
+
+    public function getMissing(): array
+    {
+        return $this->missing;
+    }
+
+    public function setMissing(array $missing): void
+    {
+        $this->missing = $missing;
+    }
+
+    public function getChanged(): array
+    {
+        return $this->changed;
+    }
+
+    public function setChanged(array $changed): void
+    {
+        $this->changed = $changed;
     }
 }

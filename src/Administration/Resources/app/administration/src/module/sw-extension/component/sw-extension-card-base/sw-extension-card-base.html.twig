@@ -27,7 +27,20 @@
     {% block sw_extension_card_base_activation_switch %}
     <div class="sw-extension-card-base__info">
         <section>
-            <span class="sw-extension-card-base__info-name">
+            <span class="sw-extension-card-base__info-name"
+                  @click="openChangesModal">
+                <sw-icon
+                    style="color: red; cursor: pointer"
+                    v-if="modificationExist"
+                    class="sw-select-result__result-item-checkmark"
+                    name="regular-times-xs"
+                />
+                <sw-icon
+                    style="color: green"
+                    v-else
+                    class="sw-select-result__result-item-checkmark"
+                    name="regular-checkmark-xs"
+                />
                 {{ extension.label }}
             </span>
 
@@ -211,6 +224,14 @@
         :extension-name="extension.label"
         :privacy-policy-extension="extension.privacyPolicyExtension"
         @modal-close="closePrivacyModal"
+    />
+    <sw-extension-changes-modal
+        v-if="showChangesModal"
+        :extension-name="extension.label"
+        :new-files="extension.new"
+        :changed-files="extension.changed"
+        :missing-files="extension.missing"
+        @modal-close="closeChangesModal"
     />
 
     <sw-extension-permissions-modal

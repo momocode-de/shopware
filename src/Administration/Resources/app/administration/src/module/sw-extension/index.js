@@ -22,6 +22,7 @@ Shopware.Component.register('sw-extension-my-extensions-listing-controls', () =>
 Shopware.Component.register('sw-extension-permissions-modal', () => import('./component/sw-extension-permissions-modal'));
 Shopware.Component.register('sw-extension-domains-modal', () => import('./component/sw-extension-domains-modal'));
 Shopware.Component.register('sw-extension-privacy-policy-extensions-modal', () => import('./component/sw-extension-privacy-policy-extensions-modal'));
+Shopware.Component.register('sw-extension-changes-modal', () => import('./component/sw-extension-changes-modal'));
 Shopware.Component.register('sw-extension-deactivation-modal', () => import('./component/sw-extension-deactivation-modal'));
 Shopware.Component.register('sw-extension-removal-modal', () => import('./component/sw-extension-removal-modal'));
 Shopware.Component.register('sw-extension-uninstall-modal', () => import('./component/sw-extension-uninstall-modal'));

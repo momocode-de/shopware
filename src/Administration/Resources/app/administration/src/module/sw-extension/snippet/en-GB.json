@@ -304,6 +304,13 @@
         "title": "{extensionLabel}: privacy policy extensions",
         "intro": "This app processes personal information. The manufacturer recommends the adjustments of your privacy policy:"
       },
+      "sw-extension-changes-modal": {
+        "title": "{extensionLabel}: Modifications on plugin code",
+        "intro": "Hello dear plugin developer, your code got modified. These are the changes:",
+        "new": "New files added",
+        "changed": "Files changed",
+        "missing": "Files missing"
+      },
       "sw-extension-permissions-details-modal": {
         "operationRead": "View",
         "operationUpdate": "Edit",
