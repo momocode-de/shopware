@@ -4,12 +4,14 @@ namespace Shopware\Core\Framework\Plugin\Command\Lifecycle;
 
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\Plugin\PluginEntity;
-use Symfony\Component\Console\Input\InputInterface;
+use Shopware\Core\Framework\Util\Hasher;
 use Symfony\Component\Finder\Finder;
 
 #[Package('core')]
 class PluginFileHashService
 {
+    public const CHECKSUM_FILE = 'checksums.json';
+
     /**
      * @internal
      */
@@ -20,59 +22,51 @@ class PluginFileHashService
 
     public function getChecksumFilePathForPlugin(PluginEntity $plugin): string
     {
-        return $this->rootDir . '/' . $plugin->getPath() . 'checksums.json';
+        return "$this->rootDir/{$plugin->getPath()}" . self::CHECKSUM_FILE;
     }
 
     /**
-     * @param array<string, string> $savedHashes
-     * @param array<string, string> $currentHashes
-     *
-     * @return array{'new': array<string, string>, 'missing': array<string, string>, 'changed': array<string, string>}
+     * @param string[] $fileExtensions
      */
-    public function compareChecksum(array $savedHashes, array $currentHashes): array
+    public function getChecksumData(PluginEntity $plugin, array $fileExtensions): PluginChecksumStruct
     {
-        $newFiles = array_diff_key($currentHashes, $savedHashes);
-        $missingFiles = array_diff_key($savedHashes, $currentHashes);
-        $manipulatedFiles = array_diff(array_diff_key($savedHashes, $missingFiles, $newFiles), $currentHashes);
-
-        return [
-            'new' => $newFiles,
-            'missing' => $missingFiles,
-            'changed' => $manipulatedFiles,
-        ];
+        return PluginChecksumStruct::fromArray([
+            'algorithm' => Hasher::ALGO,
+            'fileExtensions' => $fileExtensions,
+            'hashes' => $this->getHashes($plugin, $fileExtensions),
+            'pluginVersion' => $plugin->getVersion(),
+        ]);
     }
 
-    /**
-     * TODO: Validate the file extensions
-     */
-    /**
-     * @return string[]
-     */
-    public function getExtensions(InputInterface $input): array
+    public function checkPluginForChanges(PluginEntity $plugin): PluginChecksumCheckResult
     {
-        $extensions = \explode(',', $input->getOption('file-extensions'));
-
-        foreach ($extensions as $key => $extension) {
-            $extensions[$key] = '*.' . $extension;
+        $checksumFilePath = $this->getChecksumFilePathForPlugin($plugin);
+        if (!is_file($checksumFilePath)) {
+            return new PluginChecksumCheckResult(fileMissing: true);
         }
 
-        return $extensions;
-    }
+        $checksumFileContent = (string) file_get_contents($checksumFilePath);
+        $checksumFileData = PluginChecksumStruct::fromArray(json_decode($checksumFileContent, true, 512, \JSON_THROW_ON_ERROR));
 
-    /**
-     * @param string[] $extensions
-     *
-     * @return array{pluginVersion: string, extensions: array<string>, hashes: array<string, string>}
-     */
-    public function getChecksumData(PluginEntity $plugin, array $extensions): array
-    {
-        $hashes = $this->getHashes($plugin, $extensions);
+        $extensions = $checksumFileData->getFileExtensions();
+        $checksumPluginVersion = $checksumFileData->getPluginVersion();
 
-        return [
-            'pluginVersion' => $plugin->getVersion(),
-            'extensions' => $extensions,
-            'hashes' => $hashes,
-        ];
+        if ($plugin->getVersion() !== $checksumPluginVersion) {
+            return new PluginChecksumCheckResult(wrongVersion: true);
+        }
+
+        $currentHashes = $this->getHashes($plugin, $extensions, $checksumFileData->getAlgorithm());
+        $previouslyHashedFiles = $checksumFileData->getHashes();
+
+        $newFiles = array_diff_key($currentHashes, $previouslyHashedFiles);
+        $missingFiles = array_diff_key($previouslyHashedFiles, $currentHashes);
+        $manipulatedFiles = array_diff(array_diff_key($previouslyHashedFiles, $missingFiles, $newFiles), $currentHashes);
+
+        return new PluginChecksumCheckResult(
+            newFiles: array_keys($newFiles),
+            changedFiles: array_keys($manipulatedFiles),
+            missingFiles: array_keys($missingFiles),
+        );
     }
 
     /**
@@ -80,11 +74,11 @@ class PluginFileHashService
      *
      * @return array<string, string>
      */
-    public function getHashes(PluginEntity $plugin, array $extensions): array
+    private function getHashes(PluginEntity $plugin, array $extensions, ?string $algorithm = null): array
     {
+        $algorithm = $algorithm ?? Hasher::ALGO;
         $pluginPath = $plugin->getPath();
         if ($pluginPath === null) {
-            // TODO: Throw an exception
             return [];
         }
 
@@ -97,19 +91,12 @@ class PluginFileHashService
         foreach ($finder as $file) {
             $absoluteFilePath = $file->getRealPath();
             if (!\is_string($absoluteFilePath) || !$absoluteFilePath) {
-                // TODO: log or throw error
                 continue;
             }
 
             $relativePath = (string) str_replace($this->rootDir . '/' . $pluginPath, '', $absoluteFilePath);
 
-            $hash = \hash_file('sha256', $absoluteFilePath);
-            if (!\is_string($hash) || !$hash) {
-                // TODO: log or throw error
-                continue;
-            }
-
-            $hashes[$relativePath] = $hash;
+            $hashes[$relativePath] = Hasher::hashFile($absoluteFilePath, $algorithm);
         }
 
         return $hashes;
@@ -118,7 +105,7 @@ class PluginFileHashService
     /**
      * @return string[]
      */
-    public function getDirectories(PluginEntity $plugin): array
+    private function getDirectories(PluginEntity $plugin): array
     {
         $directories = [];
 
@@ -126,7 +113,7 @@ class PluginFileHashService
         $psr4 = $autoload['psr-4'] ?? [];
         foreach ($psr4 as $path) {
             if (\is_string($path) && $path !== '') {
-                $directories[] = "{$this->rootDir}/{$plugin->getPath()}{$path}";
+                $directories[] = "$this->rootDir/{$plugin->getPath()}$path";
             }
         }
 

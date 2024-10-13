@@ -28,16 +28,16 @@ class PluginChecksumCreateCommand extends Command
      * @internal
      */
     public function __construct(
-        private readonly EntityRepository $pluginRepo,
-        private readonly PluginFileHashService $pluginFileHasher,
+        private readonly EntityRepository $pluginRepository,
+        private readonly PluginFileHashService $pluginFileHashService,
     ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->addArgument('plugin', InputArgument::REQUIRED, 'Plugin to create a checksum list for');
-        $this->addOption('file-extensions', null, InputOption::VALUE_OPTIONAL, 'Comma-separated list of file extensions to include in the checksum', 'php,twig');
+        $this->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name');
+        $this->addOption('file-extensions', null, InputOption::VALUE_OPTIONAL, 'Comma-separated list of file extensions to include in the checksum (example: "*.php,*.twig")', '*.php,*.twig');
     }
 
     /**
@@ -48,42 +48,43 @@ class PluginChecksumCreateCommand extends Command
         $io = new ShopwareStyle($input, $output);
         $context = Context::createCLIContext();
 
-        $plugin = $this->getPlugin($input, $context);
+        $pluginName = (string) $input->getArgument('plugin');
+        $plugin = $this->getPlugin($pluginName, $context);
 
         if (!$plugin instanceof PluginEntity) {
-            $io->error(\sprintf('Plugin "%s" not found', $input->getArgument('plugin')));
+            $io->error(\sprintf('Plugin "%s" not found', $pluginName));
 
             return self::FAILURE;
         }
 
-        $extensions = $this->pluginFileHasher->getExtensions($input);
-        if ($extensions === []) {
+        $fileExtensions = \explode(',', (string) $input->getOption('file-extensions'));
+        if ($fileExtensions === []) {
             $io->error('No valid file extensions provided');
 
             return self::FAILURE;
         }
 
-        $checksumFilePath = $this->pluginFileHasher->getChecksumFilePathForPlugin($plugin);
+        $checksumFilePath = $this->pluginFileHashService->getChecksumFilePathForPlugin($plugin);
         if (!$checksumFilePath) {
-            $io->error(\sprintf('Plugin "%s" checksum file path could not be identified', $input->getArgument('plugin')));
+            $io->error(\sprintf('Plugin "%s" checksum file path could not be identified', $plugin->getName()));
 
             return self::FAILURE;
         }
 
-        $checksumData = $this->pluginFileHasher->getChecksumData($plugin, $extensions);
+        $checksumStruct = $this->pluginFileHashService->getChecksumData($plugin, $fileExtensions);
 
-        $io->info(\sprintf('Writing checksum for %s file(s) of plugin "%s" to %s', \count($checksumData['hashes']), $plugin->getName(), $checksumFilePath));
+        $io->info(\sprintf('Writing %s checksums for plugin "%s" to file %s', \count($checksumStruct->getHashes()), $plugin->getName(), $checksumFilePath));
 
-        file_put_contents($checksumFilePath, \json_encode($checksumData, \JSON_THROW_ON_ERROR));
+        file_put_contents($checksumFilePath, \json_encode($checksumStruct->jsonSerialize(), \JSON_THROW_ON_ERROR));
 
         return self::SUCCESS;
     }
 
-    private function getPlugin(InputInterface $input, Context $context): ?Entity
+    private function getPlugin(string $pluginName, Context $context): ?Entity
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('name', $input->getArgument('plugin')));
+        $criteria->addFilter(new EqualsFilter('name', $pluginName));
 
-        return $this->pluginRepo->search($criteria, $context)->first();
+        return $this->pluginRepository->search($criteria, $context)->first();
     }
 }

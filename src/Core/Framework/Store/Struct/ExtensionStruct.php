@@ -154,11 +154,24 @@ class ExtensionStruct extends Struct
 
     protected bool $managedByComposer = false;
 
-    protected array $new = [];
+    protected bool $checksumFileMissing = false;
 
-    protected array $missing = [];
+    protected bool $checksumFileWrongVersion = false;
 
-    protected array $changed = [];
+    /**
+     * @var array<string>
+     */
+    protected array $newFiles = [];
+
+    /**
+     * @var array<string>
+     */
+    protected array $missingFiles = [];
+
+    /**
+     * @var array<string>
+     */
+    protected array $changedFiles = [];
 
     /**
      * @param array<string, mixed> $data
@@ -610,33 +623,71 @@ class ExtensionStruct extends Struct
         $this->storeUrl = $storeUrl;
     }
 
-    public function getNew(): array
+    public function isChecksumFileMissing(): bool
     {
-        return $this->new;
+        return $this->checksumFileMissing;
     }
 
-    public function setNew(array $new): void
+    public function setChecksumFileMissing(bool $checksumFileMissing): void
     {
-        $this->new = $new;
+        $this->checksumFileMissing = $checksumFileMissing;
     }
 
-    public function getMissing(): array
+    public function isChecksumFileWrongVersion(): bool
     {
-        return $this->missing;
+        return $this->checksumFileWrongVersion;
     }
 
-    public function setMissing(array $missing): void
+    public function setChecksumFileWrongVersion(bool $checksumFileWrongVersion): void
     {
-        $this->missing = $missing;
+        $this->checksumFileWrongVersion = $checksumFileWrongVersion;
     }
 
-    public function getChanged(): array
+    /**
+     * @return array<string>
+     */
+    public function getNewFiles(): array
     {
-        return $this->changed;
+        return $this->newFiles;
     }
 
-    public function setChanged(array $changed): void
+    /**
+     * @param array<string> $newFiles
+     */
+    public function setNewFiles(array $newFiles): void
     {
-        $this->changed = $changed;
+        $this->newFiles = $newFiles;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getMissingFiles(): array
+    {
+        return $this->missingFiles;
+    }
+
+    /**
+     * @param array<string> $missingFiles
+     */
+    public function setMissingFiles(array $missingFiles): void
+    {
+        $this->missingFiles = $missingFiles;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getChangedFiles(): array
+    {
+        return $this->changedFiles;
+    }
+
+    /**
+     * @param array<string> $changedFiles
+     */
+    public function setChangedFiles(array $changedFiles): void
+    {
+        $this->changedFiles = $changedFiles;
     }
 }

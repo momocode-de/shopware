@@ -9,7 +9,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Log\Package;
-use Shopware\Core\Framework\Plugin\Command\Lifecycle\PluginFileHashService;
 use Shopware\Core\Framework\Store\Services\AbstractExtensionDataProvider;
 use Shopware\Core\System\User\UserEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,7 +27,6 @@ class ExtensionStoreDataController extends AbstractController
         private readonly AbstractExtensionDataProvider $extensionDataProvider,
         private readonly EntityRepository $userRepository,
         private readonly EntityRepository $languageRepository,
-        private readonly PluginFileHashService $pluginFileHashService,
     ) {
     }
 
